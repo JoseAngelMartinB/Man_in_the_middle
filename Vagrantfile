@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     router.vm.box = "ubuntu/xenial64"
     router.vm.hostname = "router"
     #router.vm.network "public_network"
-    router.vm.network "private_network", ip: "192.168.5.1"
+    router.vm.network "private_network", ip: "192.168.5.1", virtualbox__intnet: true
     router.vm.provider :virtualbox do |vb|
         vb.name = "router"
         vb.memory = "1024"
@@ -26,7 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "victima" do |victima|
     victima.vm.box = "chad-thompson/ubuntu-trusty64-gui"
     victima.vm.hostname = "victima"
-    victima.vm.network "private_network", ip: "192.168.5.2", :auto_config => "false", :netmask => "255.255.255.0"
+    victima.vm.network "private_network", ip: "192.168.5.2", :auto_config => "false", :netmask => "255.255.255.0", virtualbox__intnet: true
     victima.vm.provider :virtualbox do |vb|
         vb.name = "victima"
         vb.memory = "1024"
@@ -41,7 +41,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "atacante" do |atacante|
     atacante.vm.box = "ubuntu/xenial64"
     atacante.vm.hostname = "atacante"
-    atacante.vm.network "private_network", ip: "192.168.5.3"
+    atacante.vm.network "private_network", ip: "192.168.5.3", virtualbox__intnet: true
     atacante.vm.provider :virtualbox do |vb|
         vb.name = "atacante"
         vb.memory = "1024"
