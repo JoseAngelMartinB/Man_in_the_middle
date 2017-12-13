@@ -31,11 +31,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.name = "victima"
         vb.memory = "1024"
 	vb.gui = true
+	vb.customize [ "setextradata", :id, "VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled", 1 ]
     end
     # Configurar la red
     victima.vm.provision "shell", run: "always", inline: "sudo ifconfig eth1 192.168.5.2 netmask 255.255.255.0 up"
     victima.vm.provision "shell", run: "always", inline: "sudo route del default"
     victima.vm.provision "shell", run: "always", inline: "sudo route add default gw 192.168.5.1"
+	victima.vm.provision "shell", run: "always", inline: "localectl set-keymap es"
   end
 
   config.vm.define "atacante" do |atacante|
