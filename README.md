@@ -21,20 +21,17 @@ Mediante este comando Vagrant comenzará a descargar, montar y provisionar las d
 $ vagrant ssh atacante
 ```
 
-Una vez realizado los pasos anteriores tendremos el entorno de trabajo montado y configurado. A partir de este momento, solo vamos a trabajar usando la máquina victima (desde la interfaz gráfica) y la máquina atacante (desde la consola mediante conexión ssh).
-
-
-
+Una vez realizado los pasos anteriores tendremos el entorno de trabajo montado y configurado. Este entorno estará compuesto por una red interna, en la cual están conectadas las tres máquinas (router, victima y atacante) en las direcciones ip *192.168.5.1*, *192.168.5.2* y *192.168.5.3* respectivamente. A partir de este momento, solo vamos a trabajar usando la máquina victima (desde la interfaz gráfica) y la máquina atacante (desde la consola mediante conexión ssh).
 
 
 ## Descarga e instalación de las herramientas necesarias
-Para poder realizar el ataque, es necesario instalar algunas herramientas en la máquina atacante. El uso de estas herramientas serán explicadas posteriormente. La primera de ellas será *arpspoof*, que nos permitirá realizar el ataque "man in the middle" propiamente dicho, mediante la falsifiación de paquetes ARP. La siguiente herramienta será "iptables", que es un firewall de filtrado de paquetes del kernel de Linux (por lo que no será necesario instalarla). También se necesiará la herramienta "SSLSTrip", la cual va a permitir convertir todo el HTTPS de una web en HTTP (sin cifrar) y por tanto engañar a la victima, para obtener sus datos. Estos programás serán instalados usando lo siguientes comandos en la máquina atacante:
+Para poder realizar el ataque, es necesario instalar algunas herramientas en la máquina atacante. El uso de estas herramientas serán explicadas posteriormente. La primera de ellas será *arpspoof*, que nos permitirá realizar el ataque "man in the middle" propiamente dicho, mediante la falsifiación de paquetes ARP. La siguiente herramienta será *iptables*, que es un firewall de filtrado de paquetes del kernel de Linux (por lo que no será necesario instalarla). También se necesiará la herramienta *SSLSTrip*, la cual va a permitir convertir todo el HTTPS de una web en HTTP (sin cifrar) y por tanto engañar a la victima, para obtener sus datos. Estos programás serán instalados usando lo siguientes comandos en la máquina atacante:
 ```
 $ sudo apt-get update
 $ sudo apt-get install dsniff sslstrip 
 ```
 
-Por último será necesario descargar la herramienta delorean, la cual permitirá modificar los paquetes NTP que mande la victima de forma que se pueda modificar la fecha de esta máquina. Para ello, en la máquina atacante debemos descargar el repositorio Github de la herramienta mediante:
+Por último será necesario descargar la herramienta *Delorean*, la cual permitirá modificar los paquetes NTP que mande la victima de forma que se pueda modificar la fecha de esta máquina. Para ello, en la máquina atacante debemos descargar el repositorio Github de la herramienta mediante:
 ```
 $ git clone https://github.com/PentesterES/Delorean.git
 ```
