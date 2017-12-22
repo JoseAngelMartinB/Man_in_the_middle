@@ -61,6 +61,8 @@ SSLSTRIP -> Esta herramienta es capaz de "descifrar" el tráfico HTTPS y esnifar
 
 
 DELOREAN -> Es un servidor NTP escrito en python,con el que básicamente nosotros vamos a poder realizar una captura de todo el trafico NTP y realizar modificaciones en dichos paquetes, pudiendo de esta manera establecer una nueva fecha de sistema y así hacer viajar a la victima hacia el futuro.
+![Options](images/Comandos_Delorean002.png)
+
 
  #### Modos de funcionamiento:
    Automatico -> si no especificamos ningun parametro de entrada Delorean trabajara por defecto utilizando una fecha 1000 dias posterior a la actual, manteniendo el mismo dia y mes para evitar levantar sospechas.
@@ -94,14 +96,13 @@ NTPv4 soporta autenticación basada en cifrado asimétrico en su capa Message Di
 
 ### Contextualización del ataque
 
-En nuestro entorno de pruebas contaremos con una maquina victima, un atacante y un router. sobre este esquema la idea sera capturar todos los paquetes provenientes de la victima a través de HTTP y NTP, para primero mediante el uso del Delorean consigamos llevar la maquina victima al futuro donde no tenga validez su TTL , con lo que quedara expuesta a un ataque de SSLStrip.
-
-#### En que consiste el ataque MITM
-
-El objetivo de dicho ataque es conseguir situarse en medio de la maquina victima y la maquina router, para lograr esto debemos hacer creer al router que nuestra maquina atacante es la victima, y conseguir también que la victima piense que nosotros somos el router.
+En nuestro entorno de pruebas contaremos con una maquina victima, un atacante y un router. sobre este esquema la idea sera capturar todos los paquetes provenientes de la victima a través de HTTP y NTP, para primero mediante el uso del Delorean consigamos llevar la maquina victima al futuro donde no tenga validez su TTL, con lo que quedara expuesta a un ataque de SSLStrip.
 
 
-### Iniciando el ataque
+![Entorno de prueba](images/Contexto_general001.png)
+
+
+### Inicializando el entorno de prueba
 Lo primero a realizar sera la puesta en marcha de nuestro entorno, para ello ejecutar el siguiente comando donde tengáis descargado el Vagrantfile.
 ```
 $ vagrant up
@@ -109,14 +110,21 @@ $ vagrant up
 
 Una vez finalizada la ejecución del comando ya tendremos el entorno preparado para empezar a probar el ataque. veremos como nos ha levantado una maquina virtual con GUI (la victima) y 2 sin ella (router y atacante).
 
-#### Comenzando ejecución desde maquina atacante
+#### Ejecución desde maquina atacante
 
 Accedemos desde la terminal que utilizamos para levantar nuestro entorno y accedemos a la maquina atacante mediante SSH:
 ```
 $ vagrant ssh atacante
 ```
 
-#### Realización del MITM
+### Realización del MITM
+
+#### En que consiste el ataque MITM
+
+El objetivo de dicho ataque es conseguir situarse en medio de la maquina victima y la maquina router, para lograr esto debemos hacer creer al router que nuestra maquina atacante es la victima, y conseguir también que la victima piense que nosotros somos el router.
+
+
+#### Ejecutando el MITM
 
 Si recordamos la primera parte del ataque, consistía en la puesta de nuestra maquina atacante en medio del router y la victima, para ello debemos modificar las caches ARP de las maquinas victima y router. Esto lo conseguimos a través de un ataque ARP spoof con el cual bombardeamos de mensajes ARP diciéndole a cada uno que somos el otro.
 
@@ -131,6 +139,7 @@ $ sudo arpspoof -i eth0 -t 192.168.5.1 192.168.5.3
 ```
 
 Con esto si observamos en la cache de la maquina victima veríamos como la dirección MAC del router ha sido suplantada por la de nuestra maquina atacante al igual que en el caso del router. 
+![Ataque MITM realizado](images/ArpSpoof.png)
 
 #### Interceptar paquetes NTP con Delorean
 
