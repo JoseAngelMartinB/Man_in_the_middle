@@ -47,7 +47,7 @@ La finalidad de este ataque es demostrar como poder saltarse la seguridad establ
   
 NTP -> que es utilizado para sincronizar la fecha y hora de nuestro sistema con unos pocos milisegundos de diferencia con respecto al UTC (Universal Time Coordinated). puede estar implementado en varios modelos como el tipo cliente-servidor o un peer-to-peer. La versión utilizada de NTP en la ntpv4 ntpv3 según el sistema operativo usado, que utiliza datagramas UDP y opera en el puerto 123. NTP usa un sistema de jerarquías para sus fuentes de tiempo, cada capa es conocida como stratum, donde el stratum 0 corresponde al padre de todas las capas, y está directamente ligado a los relojes atómicos.
 
-ARP -> Es el protocolo de resolución de direcciones, mediante el cual en una red interna se obtiene una direccion fisica a partir de una direccion IP.
+ARP -> Es el protocolo de resolución de direcciones, mediante el cual en una red interna se obtiene una dirección fisica a partir de una dirección IP.
 
 HTTP ->  Es un protocolo sin estado, utilizado para realizar las transferencias en la World Wide Web.
 
@@ -131,12 +131,12 @@ Si recordamos la primera parte del ataque, consistía en la puesta de nuestra ma
 
 Le decimos al router que nosotros somos la maquina Victima:
 ```
-$ sudo arpspoof -i eth0 -t 192.168.5.2 192.168.5.1
+$ sudo arpspoof -i enp0s8 -t 192.168.5.2 192.168.5.1
 ```
 Le decimos a la Victima que nosotros somos el Router:
 
 ```
-$ sudo arpspoof -i eth0 -t 192.168.5.1 192.168.5.2
+$ sudo arpspoof -i enp0s8 -t 192.168.5.1 192.168.5.2
 ```
 
 Con esto si observamos en la cache de la maquina victima veríamos como la dirección MAC del router ha sido suplantada por la de nuestra maquina atacante al igual que en el caso del router, Quedando el esquema de nuestro entorno de pruebas queda tal como vemos en la siguiente imagen. 
@@ -151,7 +151,7 @@ Ya hemos llevado a cabo el MITM y por tanto estamos en posición de empezar a ca
 Para poder capturar los paquetes NTP necesitamos configurar una regla con iptables mediante la cual le diremos que no pueda hacer FORWARD de paquetes NTP, quedando todos los paquetes en nuestra maquina atacante que sera la encargada de modificar y reenviar estos paquetes a la victima.
 
 ```
-$ sudo iptables -t nat PREROUTING -i eth0 -p udp --dport 123 -j REDIRECT --to-port 123  
+$ sudo iptables -t nat -A PREROUTING -i enp0s8-p udp --dport 123 -j REDIRECT --to-port 123  
 ```
 
 Comprobaremos que la regla se guardo satisfactoriamente con iptables-save y ahora llega el momento de lanzar el Delorean, el cual podemos ejecutar en otra terminal. A partir de ahora solo es cuestión de tiempo hasta que la maquina victima realice una petición NTP y podamos modificarla, para empezar a enviar al futuro a nuestra victima.
