@@ -157,7 +157,7 @@ $ sudo iptables -t nat -A PREROUTING -i enp0s8 -p udp --dport 123 -j REDIRECT --
 Comprobaremos que la regla se guardo satisfactoriamente con iptables-save y ahora llega el momento de lanzar el Delorean, el cual podemos ejecutar en otra terminal. A partir de ahora solo es cuestión de tiempo hasta que la maquina victima realice una petición NTP y podamos modificarla, para empezar a enviar al futuro a nuestra victima.
 
 ```
-$ ./Delorean.py
+$ ./delorean.py
 ```
 
 Ya podemos apreciar como la herramienta Delorean ha comenzado a reenviar los paquetes NTP con fecha cambiada (por defecto 1000 días).
@@ -177,7 +177,7 @@ $ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 808
 Como decíamos antes, todo lo realizado hasta ahora es lo necesario para poder saltarnos la seguridad añadida por SSL/TLS que nos impedía realizar un ataque SSLStrip, pero ahora gracias al Delorean hemos caducado su sesión TTL y por tanto podemos forzar de nuevo al navegador de la victima a navegar a través de HTTP y ser susceptible a SSLStrip, con lo que ahora ya podremos obtener mediante el sniffer los usuarios y contraseñas de todos los sitios web donde acceda la victima. 
 
 ```
-$ ./sslstrip.py -l 8080 -w file.txt
+$ sslstrip -l 8080 -w file.txt
 ```
 
 
