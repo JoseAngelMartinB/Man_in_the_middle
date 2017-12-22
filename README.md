@@ -47,7 +47,7 @@ La finalidad de este ataque es demostrar como poder saltarse la seguridad establ
   
 NTP -> que es utilizado para sincronizar la fecha y hora de nuestro sistema con unos pocos milisegundos de diferencia con respecto al UTC (Universal Time Coordinated). puede estar implementado en varios modelos como el tipo cliente-servidor o un peer-to-peer. La versión utilizada de NTP en la ntpv4 ntpv3 según el sistema operativo usado, que utiliza datagramas UDP y opera en el puerto 123. NTP usa un sistema de jerarquías para sus fuentes de tiempo, cada capa es conocida como stratum, donde el stratum 0 corresponde al padre de todas las capas, y está directamente ligado a los relojes atómicos.
 
-ARP -> 
+ARP -> Es el protocolo de resolución de direcciones, mediante el cual en una red interna se obtiene una direccion fisica a partir de una direccion IP.
 
 HTTP ->  Es un protocolo sin estado, utilizado para realizar las transferencias en la World Wide Web.
 
@@ -61,6 +61,7 @@ SSLSTRIP -> Esta herramienta es capaz de "descifrar" el tráfico HTTPS y esnifar
 
 
 DELOREAN -> Es un servidor NTP escrito en python,con el que básicamente nosotros vamos a poder realizar una captura de todo el trafico NTP y realizar modificaciones en dichos paquetes, pudiendo de esta manera establecer una nueva fecha de sistema y así hacer viajar a la victima hacia el futuro.
+
 ![Options](images/Comandos_Delorean002.png)
 
 
@@ -130,15 +131,16 @@ Si recordamos la primera parte del ataque, consistía en la puesta de nuestra ma
 
 Le decimos al router que nosotros somos la maquina Victima:
 ```
-$ sudo arpspoof -i eth0 -t 192.168.5.3 192.168.5.1
+$ sudo arpspoof -i eth0 -t 192.168.5.2 192.168.5.1
 ```
 Le decimos a la Victima que nosotros somos el Router:
 
 ```
-$ sudo arpspoof -i eth0 -t 192.168.5.1 192.168.5.3
+$ sudo arpspoof -i eth0 -t 192.168.5.1 192.168.5.2
 ```
 
-Con esto si observamos en la cache de la maquina victima veríamos como la dirección MAC del router ha sido suplantada por la de nuestra maquina atacante al igual que en el caso del router. 
+Con esto si observamos en la cache de la maquina victima veríamos como la dirección MAC del router ha sido suplantada por la de nuestra maquina atacante al igual que en el caso del router, Quedando el esquema de nuestro entorno de pruebas queda tal como vemos en la siguiente imagen. 
+
 ![Ataque MITM realizado](images/ArpSpoof.png)
 
 #### Interceptar paquetes NTP con Delorean
