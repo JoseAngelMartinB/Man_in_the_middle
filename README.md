@@ -40,7 +40,114 @@ Una vez realizados los pasos anteriores, podemos proceder a realizar el ataque.
 
 
 ## Ejecución del ataque
+ ### Finalidad y explicación del ataque
+La finalidad de este ataque es demostrar como poder saltarse la seguridad establecida por HSTS la cual fuerza que las comunicaciones HTTP vayan sobre un canal TLS/SSL para hacer las mismas seguras. Para ello vamos a trabajar con una idea muy sencilla y elegante que fue ideada José Selvi, y que consiste en la utilización del protocolo NTP como herramienta de bypass para HSTS, esto lo conseguimos gracias a un esquema de MITM mediante el cual realizaremos modificaciones a los paquetes NTP destinados en un principio a la maquina victima para hacer que dicho sistema victima viaje al futuro consiguiendo así caducar el TTL(Time to live) de la configuración HSTS, y por tanto eliminando la capa de seguridad que protege las conexiones HTTP. Una vez eliminada la seguridad de la conexión haremos uso de la herramienta desarrollada por Moxie Marlinspike llamada SSLStrip que nos permitirá extraer información acerca de estas conexiones no seguras, obteniendo así todo tipo de información web sobre la victima.
 
+  ### Protocolos involucrados
+  
+NTP -> que es utilizado para sincronizar la fecha y hora de nuestro sistema con unos pocos milisegundos de diferencia con respecto al UTC (Universal Time Coordinated). puede estar implementado en varios modelos como el tipo cliente-servidor o un peer-to-peer. La versión utilizada de NTP en la ntpv4 ntpv3 según el sistema operativo usado, que utiliza datagramas UDP y opera en el puerto 123. NTP usa un sistema de jerarquías para sus fuentes de tiempo, cada capa es conocida como stratum, donde el stratum 0 corresponde al padre de todas las capas, y está directamente ligado a los relojes atómicos.
+
+ARP -> 
+
+HTTP ->  Es un protocolo sin estado, utilizado para realizar las transferencias en la World Wide Web.
+
+HTTPS -> Basado en HTTP, y destinado a la transferencia segura de HTTP mediante el uso de un cifrado SSL / TLS que crea un canal de cifrado.
+
+SSL/TLS -> Ambos son protocolos criptográficos, que proporcionan comunicaciones seguras por una red. usan cifrados X.509 (asimétricos) para autenticar la contraparte con quien se estén comunicando, y para intercambiar una llave simétrica.
+
+### Herramientas utilizadas
+
+SSLSTRIP -> Esta herramienta es capaz de "descifrar" el tráfico HTTPS y esnifar todo el tráfico (usuarios y claves) que viajen a través de la red en HTTPS. Realmente la herramienta no descifra el cifrado impuesto por SSL, si no que su función real es la de engañar al servidor y forzar que todo el tráfico HTTPS  pase a HTTP el cual no esta cifrado.
+
+
+DELOREAN -> Es un servidor NTP escrito en python,con el que básicamente nosotros vamos a poder realizar una captura de todo el trafico NTP y realizar modificaciones en dichos paquetes, pudiendo de esta manera establecer una nueva fecha de sistema y así hacer viajar a la victima hacia el futuro.
+
+### Fortalezas y debilidades de HSTS
+
+Esta política de seguridad fue ideada para evitar que se pudieran llevar a cabo los ataques de SSLStrip y que alguien pudiera robarnos información con ello. Con este método se asegura que nunca se va a navegar con HTTP ya que el servidor web declara que los navegadores utilizados (agentes de usuario), solo puedan navegar sobre este protocolo HTTPS.
+
+El problema que tiene esta medida de seguridad, es que tiene un tiempo de vida establecido y gracias a la herramienta Delorean podemos hacer que esta seguridad desaparezca, siendo susceptible entonces a un ataque SSLStrip	
+
+### Vulnerabilidad de NTP
+
+
+
+### Contextualización del ataque
+
+En nuestro entorno de pruebas contaremos con una maquina victima, un atacante y un router. sobre este esquema la idea sera capturar todos los paquetes provenientes de la victima a través de HTTP y NTP, para primero mediante el uso del Delorean consigamos llevar la maquina victima al futuro donde no tenga validez su TTL , con lo que quedara expuesta a un ataque de SSLStrip.
+
+#### En que consiste el ataque MITM
+
+El objetivo de dicho ataque es conseguir situarse en medio de la maquina victima y la maquina router, para lograr esto debemos hacer creer al router que nuestra maquina atacante es la victima, y conseguir también que la victima piense que nosotros somos el router.
+
+
+### Iniciando el ataque
+Lo primero a realizar sera la puesta en marcha de nuestro entorno, para ello ejecutar el siguiente comando donde tengáis descargado el Vagrantfile.
+```
+$ vagrant up
+```
+
+Una vez finalizada la ejecución del comando ya tendremos el entorno preparado para empezar a probar el ataque. veremos como nos ha levantado una maquina virtual con GUI (la victima) y 2 sin ella (router y atacante).
+
+#### Comenzando ejecución desde maquina atacante
+
+Accedemos desde la terminal que utilizamos para levantar nuestro entorno y accedemos a la maquina atacante mediante SSH:
+```
+$ vagrant ssh atacante
+```
+
+#### Realización del MITM
+
+Si recordamos la primera parte del ataque, consistía en la puesta de nuestra maquina atacante en medio del router y la victima, para ello debemos modificar las caches ARP de las maquinas victima y router. Esto lo conseguimos a través de un ataque ARP spoof con el cual bombardeamos de mensajes ARP diciéndole a cada uno que somos el otro.
+
+Le decimos al router que nosotros somos la maquina Victima:
+```
+$ sudo arpspoof -i eth0 -t 192.168.5.3 192.168.5.1
+```
+Le decimos a la Victima que nosotros somos el Router:
+
+```
+$ sudo arpspoof -i eth0 -t 192.168.5.1 192.168.5.3
+```
+
+Con esto si observamos en la cache de la maquina victima veríamos como la dirección MAC del router ha sido suplantada por la de nuestra maquina atacante al igual que en el caso del router. 
+
+#### Interceptar paquetes NTP con Delorean
+
+Ya hemos llevado a cabo el MITM y por tanto estamos en posición de empezar a capturar y modificar los paquetes que necesitamos para este ataque, que en este caso son paquetes NTP.
+
+
+Para poder capturar los paquetes NTP necesitamos configurar una regla con iptables mediante la cual le diremos que no pueda hacer FORWARD de paquetes NTP, quedando todos los paquetes en nuestra maquina atacante que sera la encargada de modificar y reenviar estos paquetes a la victima.
+
+```
+$ sudo iptables -t nat PREROUTING -i eth0 -p udp --dport 123 -j REDIRECT --to-port 123  
+```
+
+Comprobaremos que la regla se guardo satisfactoriamente con iptables-save y ahora llega el momento de lanzar el Delorean, el cual podemos ejecutar en otra terminal. A partir de ahora solo es cuestión de tiempo hasta que la maquina victima realice una petición NTP y podamos modificarla, para empezar a enviar al futuro a nuestra victima.
+
+```
+$ ./Delorean.py
+```
+
+Ya podemos apreciar como la herramienta Delorean ha comenzado a reenviar los paquetes NTP con fecha cambiada (por defecto 10000 días).
+
+
+
+
+#### Poner en funcionamiento SSLStrip
+
+  ##### Redirecciones para SSLStrip
+Para poder perpetrar este ataque de SSLStrip tenemos que hacer una ultima configuración en el firewall de la maquina atacante, que consiste en redireccionar todo el trafico que vaya por el puerto 80 y este enviarlo al puerto 8080 que es donde hemos configurado que escuche nuestro SSLStrip. Para esto estableceremos un nueva regla como la que vemos aquí:
+
+``` 
+$ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+```
+##### Capturando datos con SSLStrip
+Como decíamos antes, todo lo realizado hasta ahora es lo necesario para poder saltarnos la seguridad añadida por SSL/TLS que nos impedía realizar un ataque SSLStrip, pero ahora gracias al Delorean hemos caducado su sesión TTL y por tanto podemos forzar de nuevo al navegador de la victima a navegar a través de HTTP y ser susceptible a SSLStrip, con lo que ahora ya podremos obtener mediante el sniffer los usuarios y contraseñas de todos los sitios web donde acceda la victima. 
+
+```
+$ ./sslstrip.py -l 8080 -w file.txt
+```
 
 
 ## Autores
