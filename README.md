@@ -62,6 +62,26 @@ SSLSTRIP -> Esta herramienta es capaz de "descifrar" el tráfico HTTPS y esnifar
 
 DELOREAN -> Es un servidor NTP escrito en python,con el que básicamente nosotros vamos a poder realizar una captura de todo el trafico NTP y realizar modificaciones en dichos paquetes, pudiendo de esta manera establecer una nueva fecha de sistema y así hacer viajar a la victima hacia el futuro.
 
+ #### Modos de funcionamiento:
+   Automatico -> si no especificamos ningun parametro de entrada Delorean trabajara por defecto utilizando una fecha 1000 dias posterior a la actual, manteniendo el mismo dia y mes para evitar levantar sospechas.
+   
+   Step Mode (-s) -> En este modo nosotros podemos elegir cuantos segundo,horas o dias queremos avanzar.
+   
+   Date mode (-d) -> Con este modo tu puedes elegir la fecha exacta a la que quieres hacer viajar a la victima.
+   
+   Random mode (-r) -> El Delorean comenzara a enviar fechas aleatorias al sistema victima, puede ser util para testear overflows.
+   
+   Skimming Attack (-k & -t) -> Este modo funciona de 2 formas. Por un lado con -k avanza al futuro en varios pasos en lugar de en uno solo. La opcion -t lo que nos permite es usar los saltos en el tiempo establecidos con -k pero esta vez retorcediendo hacia el pasado, con lo que por ejemplo podriamos reutilizar viejos certifcados ya caducados en la maquina victima.
+   
+#### Vulnerabilidades de los sistemas operativos:
+ Ubuntu Linux -> No tiene un demonio NTP corriendo por el mismo, pero utiliza una configuracion por defecto via 'ntpdate', este comando hace una peticion cada vez que una interfaz de red se levanta. Utiliza NTPv4 sin autenticación, por tanto vulnerables a MITM.
+ 
+ Fedora Linux -> al contrario que en Ubuntu Fedora si utiliza un demonio NTP llamado 'chronyd' cada hace sincronizaciones cada minuto. Utiliza NTPv3 sin autenticacion, de modo que es vulnerable a ataques MITM.
+ 
+ Mac OS X Lion -> Cuenta con un demonio NTP llamado 'ntpd' que sincronizaria cada 9 minutos, utiliza NTPv4 sin autenticacion, por tanto tambien es vulnerable.
+ 
+ Microsoft Windows -> Este es el sistema con la implementación mas segura de NTP, tampoco utiliza autenticacion, pero implementa algunas características adicionales que aportan un extra de seguridad y de dificultad para realizar el ataque. Su periodo de sincronizacionn esta entorno a 1 semana. La segunda característica de seguridad son los paramtros 'MaxPosPhaseCorrection' y 'MinPosPhaseCorrection' situado en el registro de Windows, especificando el máximo y el mínimo tiempo en segundos que el reloj puede ser reajustado con una sincronizacionn, estos valores están entorno a unas 15 horas. Esto deja una estrecha posibilidad para realizar un ataque ya que salvo que el usuario tenga modificado el valor de 'MaxPosPhaseCorrection' no podremos llevar a cabo este ataque. Otro dato interesante es que si forzamos a que el usuario realice una petición de forma manual no se aplicaran ninguna de estas restricciones y sera vulnerable.
+
 ### Fortalezas y debilidades de HSTS
 
 Esta política de seguridad fue ideada para evitar que se pudieran llevar a cabo los ataques de SSLStrip y que alguien pudiera robarnos información con ello. Con este método se asegura que nunca se va a navegar con HTTP ya que el servidor web declara que los navegadores utilizados (agentes de usuario), solo puedan navegar sobre este protocolo HTTPS.
@@ -69,7 +89,7 @@ Esta política de seguridad fue ideada para evitar que se pudieran llevar a cabo
 El problema que tiene esta medida de seguridad, es que tiene un tiempo de vida establecido y gracias a la herramienta Delorean podemos hacer que esta seguridad desaparezca, siendo susceptible entonces a un ataque SSLStrip	
 
 ### Vulnerabilidad de NTP
-
+NTPv4 soporta autenticación basada en cifrado asimétrico en su capa Message Digest que impide que el timestamp sea modificado. El servidor firma el mensaje NTP usando su clave privada, por tanto el cliente podra verificar la integridad del mensaje, y por tanto no puede realizarse un ataque de MITM. Pero si tenemos en cuenta que practicamente ningun sistema operativo implementa este sistema de autenticación, por lo que realmente si serian vulnerables a un MITM.
 
 
 ### Contextualización del ataque
