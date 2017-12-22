@@ -151,7 +151,7 @@ Ya hemos llevado a cabo el MITM y por tanto estamos en posición de empezar a ca
 Para poder capturar los paquetes NTP necesitamos configurar una regla con iptables mediante la cual le diremos que no pueda hacer FORWARD de paquetes NTP, quedando todos los paquetes en nuestra maquina atacante que sera la encargada de modificar y reenviar estos paquetes a la victima.
 
 ```
-$ sudo iptables -t nat -A PREROUTING -i enp0s8-p udp --dport 123 -j REDIRECT --to-port 123  
+$ sudo iptables -t nat -A PREROUTING -i enp0s8 -p udp --dport 123 -j REDIRECT --to-port 123  
 ```
 
 Comprobaremos que la regla se guardo satisfactoriamente con iptables-save y ahora llega el momento de lanzar el Delorean, el cual podemos ejecutar en otra terminal. A partir de ahora solo es cuestión de tiempo hasta que la maquina victima realice una petición NTP y podamos modificarla, para empezar a enviar al futuro a nuestra victima.
@@ -160,7 +160,7 @@ Comprobaremos que la regla se guardo satisfactoriamente con iptables-save y ahor
 $ ./Delorean.py
 ```
 
-Ya podemos apreciar como la herramienta Delorean ha comenzado a reenviar los paquetes NTP con fecha cambiada (por defecto 10000 días).
+Ya podemos apreciar como la herramienta Delorean ha comenzado a reenviar los paquetes NTP con fecha cambiada (por defecto 1000 días).
 
 
 
