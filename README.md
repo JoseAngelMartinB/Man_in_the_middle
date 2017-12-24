@@ -164,7 +164,12 @@ $ cat caputra.txt
 ```
 
 ## Referencias
-
+1. Network time protocol (ntp): Threats and countermeasures. [http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/](http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/). [Online, accedido el 23 de diciembre de 2017].
+2. Gonzalo Abad-Perez. Ataque MITM por arp spoofing + sniffing. [http://highsec.es/2014/08/ataque-mitm-por-arp-spoofing-sniffing/](http://highsec.es/2014/08/ataque-mitm-por-arp-spoofing-sniffing/). [Online, accedido el 23 de diciembre de 2017].
+3. Chema Alonso. Atacar la seguridad https con un delorean en python. [http://www.elladodelmal.com/2015/08/atacar-la-seguridad-https-con-un.html](http://www.elladodelmal.com/2015/08/atacar-la-seguridad-https-con-un.html). [Online, accedido el 22 de diciembre de 2017].
+4. Pablo González-Pérez. Ataques man in the middle a hsts: Sslstrip 2 & delorean. [https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/](https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/). [Online, accedido el 20 de diciembre de 2017].
+5. Antonio López. Evitando hsts, ¿una cuestión de tiempo? [https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/](https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/). [Online, accedido el 23 de diciembre de 2017].
+6. Jose Selvi. Bypassing http strict transport security. In *Blackhat (Europe) 2014*, 2014.
 
 ## Autores
 * José Ángel Martín Baos
