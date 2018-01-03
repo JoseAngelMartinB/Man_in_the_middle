@@ -1,6 +1,12 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Man in the middle attack
+# https://github.com/JoseAngelMartinB/Man_in_the_middle
+# Autores:
+#  - José Ángel Martín Baos
+#  - Óscar Pérez Galán
+
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|

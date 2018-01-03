@@ -163,64 +163,39 @@ Para obtener los resultados de la captura, se puede ejecutar:
 $ cat caputra.txt
 ```
 # Contramedidas
-Ya hemos hablado detenidamente de como debería realizar el ataque basado en la vulnerabilidad del protocolo NTP en los diferentes sistemas operativos existentes, que nos permite iniciar un ataque SSLStrip. Pero que podemos hacer para defendernos, ya que sin unas buenas medidas de seguridad podríamos sufrir un ataque del estilo MITM. 
+En el apartado anterior se ha comentado detenidamente como se debería realizar el ataque basado en la vulnerabilidad del protocolo NTP en los diferentes sistemas operativos existentes, que nos permite iniciar un ataque SSLStrip. Ahora vamos a comentar algunas buenas medidas de seguridad que podemos seguir para defendernos, ya que sin estas podríamos sufrir un ataque similar.
 
 ## Defensa contra MITM
-Todo el ataque se fundamenta en el uso de un MITM que nos permita estar en posición de capturar el trafico e iniciar el ataque de SSLStip. La forma usada para colocarnos en medio de la victima y router en este contexto ha sido mediante el envenenamiento de las caches ARP, y es hache donde tenemos que actuar para evitar que un atacante pudiese modificar a su antojo nuestra cache ARP e iniciar un ataque.
+El ataque anterior se fundamenta en el uso de un ataque MITM que nos permite estar en posición de capturar el tráfico e iniciar el ataque de SSLStip. La forma usada para colocarnos en medio de la víctima y del router en este contexto ha sido mediante el envenenamiento de las caches ARP. Por lo tanto, es ahí donde tenemos que actuar para evitar que un atacante pudiese modificar a su antojo nuestra cache ARP y de tal forma conseguir inflitrarse en medio de la comunicación.
 
-### Cache ARP estatica
-Quizás esta sea la opción mas tediosa, puesto que debemos ir configurando todas las entradas manualmente, pero nos asegura que nadie pueda modificarlas con un arpspoof. Según el sistema operativo seguiremos un procedimiento u otro.
+### Cache ARP estática
+Posiblemente esta sea la opción mas tediosa, puesto que debemos configurar todas las entradas manualmente, pero nos asegura que nadie puede modificarlas con un ataque arpspoof. Según el sistema operativo seguiremos un procedimiento u otro.
+
 #### windows
-
 ```
 $ netsh interface ipv4 add neighbors "Local Area Connection" 1.1.1.1 de-ad-be-ef-de-ad
 ```
-#### Linux
 
+#### Linux
 ```
 $ arp -s 1.1.1.1 de:ad:be:ef:de:ad
 ```
-#### Mac OX
 
+#### Mac OX
 ```
 $ arp -S 1.1.1.1 de:ad:be:ef:de:ad
 ```
-#### Solaris
 
+#### Solaris
 ```
 $ arp -s 1.1.1.1 de:ad:be:ef:de:ad permanent
 ```
 
 ### Script de duplicados en cache ARP
-Seguramente la primera opción de hacer este trabajo de forma estática no nos convezca demasiado por el engorro que supone, por tanto podríamos realizar un sencillo script en bash que evaluase si existe alguna entrada duplicada en nuestra cache ARP, lo cual seria síntoma de un posible ataque de MITM.
-
-```
-#!/bin/bash
-
-#Busqueda en cache ARP por direcciones duplicadas
-
-
-while :
-do
-
-
-duplicado=$(arp -a | awk '{print $4 " "}' | grep [0-9] | uniq -c | grep -o " [2:*] ")
-
-
-        if [ $duplicado != "1" ]
-        then
-                zenity --error --text "Esta sufriendo un ataque de ARP SPOOFING"
-
-        fi
-
-sleep 15
-nmap -sP 192.168.1.1-254 > /dev/null
-done
-
-```
+Dado que la opción de implementar una caché ARP estática no convence dado la poca escalabilidad y su difícil mantenibilidad, es conveniente utilizar otro método. Por ejemplo, se podría realizar un sencillo script en bash que evalúe si existe alguna entrada duplicada en nuestra cache ARP, lo cual sería síntoma de un posible ataque de MITM. Este script puede encontrarse en el archivo [duplicados_cache_ARP.sh](duplicados_cache_ARP.sh).
 
 ### Programas de terceros
-Si queremos algo un poco mas elaborado podríamos recurrir a software desarrollado específicamente para este cometido como podrían ser para Windows el uso de shARP en Linux que de forma sencilla puede ayudarnos a detectar y defendernos de los ataque ARP, funciona tanto de modo defensivo (solo avisa del ataque) como ofensivo (actúa bloqueando la inundación de paquetes ARP enviados por el atacante denegando de esta manera el ataque).
+Si deseamos una solución más eleborada, podemos recurrir a software desarrollado específicamente para este cometido, como podría ser: en el caso de Linux el uso de *shARP* [1] que de forma sencilla puede ayudarnos a detectar y defendernos de los ataque ARP. Este funciona tanto de modo defensivo (sólo avisa del ataque), como en modo ofensivo (actúa bloqueando la inundación de paquetes ARP enviados por el atacante denegando de esta manera el ataque).
 
 #### modo defensivo
 ```
@@ -237,12 +212,14 @@ $ sudo bash shARP.sh -o [INTERFAZ]
 
 
 ## Referencias
-1. Network time protocol (ntp): Threats and countermeasures. [http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/](http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/). [Online, accedido el 23 de diciembre de 2017].
-2. Gonzalo Abad-Perez. Ataque MITM por arp spoofing + sniffing. [http://highsec.es/2014/08/ataque-mitm-por-arp-spoofing-sniffing/](http://highsec.es/2014/08/ataque-mitm-por-arp-spoofing-sniffing/). [Online, accedido el 23 de diciembre de 2017].
-3. Chema Alonso. Atacar la seguridad https con un delorean en python. [http://www.elladodelmal.com/2015/08/atacar-la-seguridad-https-con-un.html](http://www.elladodelmal.com/2015/08/atacar-la-seguridad-https-con-un.html). [Online, accedido el 22 de diciembre de 2017].
-4. Pablo González-Pérez. Ataques man in the middle a hsts: Sslstrip 2 & delorean. [https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/](https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/). [Online, accedido el 20 de diciembre de 2017].
-5. Antonio López. Evitando hsts, ¿una cuestión de tiempo? [https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/](https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/). [Online, accedido el 23 de diciembre de 2017].
-6. Jose Selvi. Bypassing http strict transport security. In *Blackhat (Europe) 2014*, 2014.
+1. shARP https://github.com/europa502/shARP. [Online, accedido el 3 de enero de 2018].
+2. Network time protocol (ntp): Threats and countermeasures. [http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/](http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/). [Online, accedido el 23 de diciembre de 2017].
+3. sslstrip. https://moxie.org/software/sslstrip/. [Online, accedido el 26 de diciembre de 2017].
+4. Gonzalo Abad-Perez. Ataque MITM por arp spoofing + sniffing. [http://highsec.es/2014/08/ataque-mitm-por-arp-spoofing-sniffing/](http://highsec.es/2014/08/ataque-mitm-por-arp-spoofing-sniffing/). [Online, accedido el 23 de diciembre de 2017].
+53. Chema Alonso. Atacar la seguridad https con un delorean en python. [http://www.elladodelmal.com/2015/08/atacar-la-seguridad-https-con-un.html](http://www.elladodelmal.com/2015/08/atacar-la-seguridad-https-con-un.html). [Online, accedido el 22 de diciembre de 2017].
+6. Pablo González-Pérez. Ataques man in the middle a hsts: Sslstrip 2 & delorean. [https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/](https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/). [Online, accedido el 20 de diciembre de 2017].
+7. Antonio López. Evitando hsts, ¿una cuestión de tiempo? [https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/](https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/). [Online, accedido el 23 de diciembre de 2017].
+8. Jose Selvi. Bypassing http strict transport security. In *Blackhat (Europe) 2014*, 2014.
 
 ## Autores
 * José Ángel Martín Baos
