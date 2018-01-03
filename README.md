@@ -162,6 +162,79 @@ Para obtener los resultados de la captura, se puede ejecutar:
 ```
 $ cat caputra.txt
 ```
+# Contramedidas
+Ya hemos hablado detenidamente de como debería realizar el ataque basado en la vulnerabilidad del protocolo NTP en los diferentes sistemas operativos existentes, que nos permite iniciar un ataque SSLStrip. Pero que podemos hacer para defendernos, ya que sin unas buenas medidas de seguridad podríamos sufrir un ataque del estilo MITM. 
+
+## Defensa contra MITM
+Todo el ataque se fundamenta en el uso de un MITM que nos permita estar en posición de capturar el trafico e iniciar el ataque de SSLStip. La forma usada para colocarnos en medio de la victima y router en este contexto ha sido mediante el envenenamiento de las caches ARP, y es hache donde tenemos que actuar para evitar que un atacante pudiese modificar a su antojo nuestra cache ARP e iniciar un ataque.
+
+### Cache ARP estatica
+Quizás esta sea la opción mas tediosa, puesto que debemos ir configurando todas las entradas manualmente, pero nos asegura que nadie pueda modificarlas con un arpspoof. Según el sistema operativo seguiremos un procedimiento u otro.
+#### windows
+
+```
+$ netsh interface ipv4 add neighbors "Local Area Connection" 1.1.1.1 de-ad-be-ef-de-ad
+```
+#### Linux
+
+```
+$ arp -s 1.1.1.1 de:ad:be:ef:de:ad
+```
+#### Mac OX
+
+```
+$ arp -S 1.1.1.1 de:ad:be:ef:de:ad
+```
+#### Solaris
+
+```
+$ arp -s 1.1.1.1 de:ad:be:ef:de:ad permanent
+```
+
+### Script de duplicados en cache ARP
+Seguramente la primera opción de hacer este trabajo de forma estática no nos convezca demasiado por el engorro que supone, por tanto podríamos realizar un sencillo script en bash que evaluase si existe alguna entrada duplicada en nuestra cache ARP, lo cual seria síntoma de un posible ataque de MITM.
+
+```
+#!/bin/bash
+
+#Busqueda en cache ARP por direcciones duplicadas
+
+
+while :
+do
+
+
+duplicado=$(arp -a | awk '{print $4 " "}' | grep [0-9] | uniq -c | grep -o " [2:*] ")
+
+
+        if [ $duplicado != "1" ]
+        then
+                zenity --error --text "Esta sufriendo un ataque de ARP SPOOFING"
+
+        fi
+
+sleep 15
+nmap -sP 192.168.1.1-254 > /dev/null
+done
+
+```
+
+### Programas de terceros
+Si queremos algo un poco mas elaborado podríamos recurrir a software desarrollado específicamente para este cometido como podrían ser para Windows el uso de shARP en Linux que de forma sencilla puede ayudarnos a detectar y defendernos de los ataque ARP, funciona tanto de modo defensivo (solo avisa del ataque) como ofensivo (actúa bloqueando la inundación de paquetes ARP enviados por el atacante denegando de esta manera el ataque).
+
+#### modo defensivo
+```
+$ sudo bash shARP.sh -d [INTERFAZ]
+
+```
+
+#### modo ofensivo
+```
+$ sudo bash shARP.sh -o [INTERFAZ]
+
+```
+
+
 
 ## Referencias
 1. Network time protocol (ntp): Threats and countermeasures. [http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/](http://resources.infosecinstitute.com/network-time-protocol-ntp-threats-countermeasures/). [Online, accedido el 23 de diciembre de 2017].
