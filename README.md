@@ -172,23 +172,26 @@ El ataque anterior se fundamenta en el uso de un ataque MITM que nos permite est
 Posiblemente esta sea la opción mas tediosa, puesto que debemos configurar todas las entradas manualmente, pero nos asegura que nadie puede modificarlas con un ataque arpspoof. Según el sistema operativo seguiremos un procedimiento u otro.
 
 #### windows
+utilizaremos el comando netsh con las opciones add neighboors que indica una nueva entrada en la cache neihboor cache.
 ```
-$ netsh interface ipv4 add neighbors "Local Area Connection" 1.1.1.1 de-ad-be-ef-de-ad
+$ netsh interface ipv4 add neighbors "Nombre maquina" <dirección IP> <MAC>
 ```
 
 #### Linux
 ```
-$ arp -s 1.1.1.1 de:ad:be:ef:de:ad
+# opcion -s indica una nueva entrada en la tabla ARP
+
+$ arp -s <dirección IP> <MAC>
 ```
 
 #### Mac OX
 ```
-$ arp -S 1.1.1.1 de:ad:be:ef:de:ad
+$ arp -S <dirección IP> <MAC>
 ```
 
 #### Solaris
 ```
-$ arp -s 1.1.1.1 de:ad:be:ef:de:ad permanent
+$ arp -s <dirección IP> <MAC> permanent
 ```
 
 ### Script de duplicados en cache ARP
@@ -209,6 +212,18 @@ $ sudo bash shARP.sh -o [INTERFAZ]
 
 ```
 
+## Defensa contra SSLStrip
+Como ya comentábamos este tipo de ataques son capaces de cambiar nuestras peticiones https por peticiones http, y por tanto dejar nuestra conexión sin cifrado. Para evitar esto existe HSTS (Http Strict Transport Security) que nos impide navegar a través de http. Pero de nuevo es posible evitarlo gracias al campo *max-age* [9] en la cabecera de HSTS que indica el tiempo por el que se debe forzar la navegación a través de https, que con el uso de Delorean nos permite saltarnos este valor de max-age y forzar peticiones http.
+
+### Comprobación de uso HTTPS
+Si realmente estamos siendo objetivo de una ataque SSLStrip podremos ver como nuestras peticiones dejan de ser https y pasan a http en sitios en los que previamente conozcamos que se hace uso de https. Quizás no sea la mejor medidas ante un ataque puesto que esta comprobación ya se realiza cuando estamos siendo atacados, pero puede ayudarnos a detectar el ataque y tomar medidas.
+
+### Uso de VPN
+Dado que una comprobación por parte del usuario no solo no es útil para impedir el ataque, sino que tampoco nos asegura que la victima se de cuenta del mismo es mejor hacer uso de otros mecanismos que si aporten seguridad real a nuestra comunicación. El uso de una VPN puede ser una buena opción, ya que nos permite añadir una capa de seguridad extra con la que poder evitar el robo de información en caso de sufrir un ataque SSLStrip, ya que esta se encuentra cifrada.
+
+
+
+
 
 
 ## Referencias
@@ -220,6 +235,7 @@ $ sudo bash shARP.sh -o [INTERFAZ]
 6. Pablo González-Pérez. Ataques man in the middle a hsts: Sslstrip 2 & delorean. [https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/](https://www.paginaswebciudadreal.es/blog/ataques-man-in-the-middle-hsts-sslstrip-2-delorean/). [Online, accedido el 20 de diciembre de 2017].
 7. Antonio López. Evitando hsts, ¿una cuestión de tiempo? [https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/](https://securityinside.info/evitando-hsts-una-cuestion-de-tiempo/). [Online, accedido el 23 de diciembre de 2017].
 8. Jose Selvi. Bypassing http strict transport security. In *Blackhat (Europe) 2014*, 2014.
+9. Boris Schapira. Ensure secured connections with HSTS (HTTP Strict Transport Security) [https://blog.dareboost.com/en/2017/09/hsts-ensure-secured-connections/]
 
 ## Autores
 * José Ángel Martín Baos
