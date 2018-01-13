@@ -11,12 +11,12 @@ while :
 do
 duplicado=$(arp -a | awk '{print $4 " "}' | grep [0-9] | sort | uniq -c | grep -o " [2:*] ")
 
-        if [ $duplicado != "1" ]
+        if [ ! -z $duplicado]
         then
                 zenity --error --text "Esta sufriendo un ataque de ARP SPOOFING"
 
         fi
 
-sleep 15
+sleep 60
 nmap -sP 192.168.1.1-254 > /dev/null
 done
