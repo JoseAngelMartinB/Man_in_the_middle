@@ -9,7 +9,7 @@
 #Busqueda en cache ARP por direcciones duplicadas
 while :
 do
-duplicado=$(arp -a | awk '{print $4 " "}' | grep [0-9] | uniq -c | grep -o " [2:*] ")
+duplicado=$(arp -a | awk '{print $4 " "}' | grep [0-9] | sort | uniq -c | grep -o " [2:*] ")
 
         if [ $duplicado != "1" ]
         then
