@@ -174,7 +174,7 @@ Posiblemente esta sea la opción mas tediosa, puesto que debemos configurar toda
 #### windows
 utilizaremos el comando netsh con las opciones add neighboors que indica una nueva entrada en la cache neihboor cache.
 ```
-$ netsh interface ipv4 add neighbors "Nombre maquina" <dirección IP> <MAC>
+$ netsh interface ipv4 add neighbors "Nombre máquina" <dirección IP> <MAC>
 ```
 
 #### Linux
@@ -213,7 +213,7 @@ $ sudo bash shARP.sh -o [INTERFAZ]
 ```
 
 ## Defensa contra SSLStrip
-Como se ha comentado anteriormente, este tipo de ataques es capaz de cambiar las peticiones https enviadas por nuestra maquina por peticiones http, y por tanto, logra que nuestra conexión se realice sin cifrado. Para evitar esto, existe un mecanismo llamado HSTS (Http Strict Transport Security) que impide navegar a través de http si el servidor lo incorpora [1]. Pero de nuevo es posible evitarlo gracias al campo *max-age* en la cabecera de HSTS que indica el tiempo por el que se debe forzar la navegación a través de https, y mediante el uso de Delorean podríamos saltarnos este valor de *max-age* y forzar peticiones http.
+Como se ha comentado anteriormente, este tipo de ataques es capaz de cambiar las peticiones https enviadas por nuestra máquina por peticiones http, y por tanto, logra que nuestra conexión se realice sin cifrado. Para evitar esto, existe un mecanismo llamado HSTS (Http Strict Transport Security) que impide navegar a través de http si el servidor lo incorpora [1]. Pero de nuevo es posible evitarlo gracias al campo *max-age* en la cabecera de HSTS que indica el tiempo por el que se debe forzar la navegación a través de https, y mediante el uso de Delorean podríamos saltarnos este valor de *max-age* y forzar peticiones http.
 
 ### Comprobación de uso HTTPS
 Si realmente estamos siendo objetivo de una ataque SSLStrip, podremos ver como nuestras peticiones dejan de ser https y pasan a http en sitios en los que previamente se conozca que se hace uso de https. Quizás no sea la mejor medida ante un ataque, puesto que esta comprobación ya se realiza cuando estamos siendo atacados, pero puede ayudarnos a detectar el ataque y tomar medidas.
